@@ -36,7 +36,7 @@ public class StringCalculator extends JFrame {
 
     private void addButtons() {
         addButton("D/M", e -> toggleCase());
-        String[] letterGroups = {"abc", "def", "ghi", "jkl", "mno", "pqr", "stu", "vwx", "yz"};
+        String[] letterGroups = {"abc", "def", "ghi", "jkl", "mno", "pqr", "stuv", "xyz"};
         for (String group : letterGroups) {
             addButton(group, e -> appendLetter(e.getActionCommand().charAt(0)));
         }
@@ -60,25 +60,38 @@ public class StringCalculator extends JFrame {
     }
 
     private void appendLetter(char group) {
+        char lowerCaseGroup = Character.toLowerCase(group);
+        if (!lettersMap.containsKey(lowerCaseGroup)) {
+            return;
+        }
+
         long currentTime = System.currentTimeMillis();
-        if (currentTime - lastPressTime > 1000 || lastButton != group) {
-            lastButton = group;
+        if (currentTime - lastPressTime > 1500 || lastButton != lowerCaseGroup) {
+            lastButton = lowerCaseGroup;
             lastPressTime = currentTime;
-            currentInput += isUpperCase ? Character.toUpperCase(group) : group;
+            currentInput += getLetter(lowerCaseGroup, 0);
         } else {
-            String[] letters = lettersMap.get(lastButton);
+            String[] letters = lettersMap.get(lowerCaseGroup);
             int lastCharIndex = currentInput.length() - 1;
             char lastChar = currentInput.charAt(lastCharIndex);
-            String lettersString = String.join("", letters);
-            int letterIndex = lettersString.indexOf(lastChar) + 1;
+            StringBuilder lettersString = new StringBuilder();
+            for (String letter : letters) {
+                lettersString.append(letter);
+            }
+
+            int letterIndex = lettersString.toString().toLowerCase().indexOf(Character.toLowerCase(lastChar)) + 1;
             if (letterIndex >= letters.length) {
                 letterIndex = 0;
             }
-            currentInput = currentInput.substring(0, lastCharIndex) + (isUpperCase ? letters[letterIndex].toUpperCase() : letters[letterIndex]);
+            currentInput = currentInput.substring(0, lastCharIndex) + getLetter(lowerCaseGroup, letterIndex);
         }
         textField.setText(currentInput);
     }
 
+    private String getLetter(char group, int index) {
+        String letter = lettersMap.get(Character.toLowerCase(group))[index];
+        return isUpperCase ? letter.toUpperCase() : letter;
+    }
 
     private void removeLastCharacter() {
         if (!currentInput.isEmpty()) {
@@ -89,8 +102,8 @@ public class StringCalculator extends JFrame {
 
     private void clearAll() {
         currentInput = "";
-        previousInput = "";
         operation = "";
+        previousInput = "";
         textField.setText("");
     }
 
@@ -110,7 +123,7 @@ public class StringCalculator extends JFrame {
                     currentInput = previousInput + currentInput;
                     break;
                 case "-":
-                    currentInput = previousInput.replaceAll(currentInput, "");
+                    currentInput = previousInput.replace(currentInput, "");
                     break;
                 case "/":
                     currentInput = commonSubstring(previousInput, currentInput);
@@ -161,14 +174,14 @@ public class StringCalculator extends JFrame {
         lettersMap.put('p', new String[]{"p", "q", "r"});
         lettersMap.put('q', new String[]{"q", "r", "p"});
         lettersMap.put('r', new String[]{"r", "p", "q"});
-        lettersMap.put('s', new String[]{"s", "t", "u"});
-        lettersMap.put('t', new String[]{"t", "u", "s"});
-        lettersMap.put('u', new String[]{"u", "s", "t"});
-        lettersMap.put('v', new String[]{"v", "w", "x"});
-        lettersMap.put('w', new String[]{"w", "x", "v"});
-        lettersMap.put('x', new String[]{"x", "v", "w"});
-        lettersMap.put('y', new String[]{"y", "z"});
-        lettersMap.put('z', new String[]{"z", "y"});
+        lettersMap.put('s', new String[]{"s", "t", "u", "v"});
+        lettersMap.put('t', new String[]{"t", "u", "v", "s"});
+        lettersMap.put('u', new String[]{"u", "v", "s", "t"});
+        lettersMap.put('v', new String[]{"v", "s", "t", "u"});
+        lettersMap.put('w', new String[]{"w", "x", "y", "z"});
+        lettersMap.put('x', new String[]{"x", "y", "z", "w"});
+        lettersMap.put('y', new String[]{"y", "z", "w", "x"});
+        lettersMap.put('z', new String[]{"z", "w", "x", "y"});
     }
 
     public static void main(String[] args) {
